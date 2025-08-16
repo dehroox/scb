@@ -7,6 +7,10 @@ files:
 
 out: bin/final.o
 
+packages:
+  - name: example_package
+    version: 1.2
+
 profiles:
   - dev: -O0
   - release: -O3
