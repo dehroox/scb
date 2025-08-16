@@ -12,11 +12,17 @@
 #include <string.h>
 
 static void usage() {
-    (void)fprintf(stderr,
-                  "Usage: SCB [options] <args>\n"
-                  "Options:\n"
-                  "  -h, --help       Show this help message\n"
-                  "  -v, --version    Show version\n");
+    (void)fprintf(
+        stderr,
+        "Usage: SCB [options] <args>\n"
+        "Options:\n"
+        "  -h, --help                     Show this help message\n"
+        "  -v, --version                  Show version\n"
+        "  -c, --compiler <cc>            Explicitly set compiler\n"
+        "  -C, --config <path>            Explicitly set config file\n"
+        "  -a, --add <dep(s)>             Install a dependency\n"
+        "  -r, --remove <dep(s)>          Remove a dependency\n"
+        "  -i, --initialize <path>        Initialize a project\n");
 }
 
 int main(int argc, char* argv[]) {
