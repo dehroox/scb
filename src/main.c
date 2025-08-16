@@ -18,7 +18,7 @@
 #include "../include/likely_unlikely.h"
 
 #define VERSION "0.1"
-#define DEFAULT_CONFIG_FILE "/scb.yml"
+#define DEFAULT_CONFIG_FILE "scb.yml"
 
 static inline void usage() {
     (void)fprintf(stderr,
@@ -35,13 +35,7 @@ static inline void usage() {
 }
 
 int main(int argc, char* argv[]) {
-    char cwd[1024];
     char* config_file = NULL;
-
-    if (unlikely(!getcwd(cwd, sizeof cwd))) {
-        perror("getcwd");
-        return EXIT_FAILURE;
-    }
 
     if (argc < 2 || argv[1][0] != '-') {
         usage();
@@ -73,13 +67,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
     }
 
-    char path[2048];
-    if (snprintf(path, sizeof path, "%s/%s", cwd,
-                 config_file ? config_file : DEFAULT_CONFIG_FILE) >=
-        (int)sizeof path) {
-        (void)fprintf(stderr, "Config path too long\n");
-        return EXIT_FAILURE;
-    }
+    const char* path = config_file ? config_file : DEFAULT_CONFIG_FILE;
 
     void* buffer = NULL;
     size_t filesize = breadfile(path, &buffer);
