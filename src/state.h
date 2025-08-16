@@ -4,7 +4,7 @@
 typedef struct {
     char* cc;
     char* flags;
-    char* entry;
+    char* files;
     char* out;
 } Profile;
 
