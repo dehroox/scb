@@ -8,6 +8,5 @@
     succeeds.
 */
 size_t breadfile(const char* path, void** out);
-int breadfile_free(void* buf, size_t filesize);
 
 #endif

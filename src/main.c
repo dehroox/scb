@@ -81,6 +81,6 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    breadfile_free(buffer, filesize);
+    munmap(buffer, filesize);
     return EXIT_SUCCESS;
 }

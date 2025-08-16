@@ -1,3 +1,13 @@
+/*
+    breadfile.c  ~  poem
+
+    A simple file it is, with even simpler contents,
+    Buffer-Read-File, a clever name for sure, bread.
+    Your utter importance, for everything from IO,
+    to anything except parsing, You cover so little,
+    yet matter so much.
+*/
+
 #include "../include/breadfile.h"
 #include <fcntl.h>
 #include <stddef.h>
@@ -31,8 +41,4 @@ size_t breadfile(const char* path, void** out) {
 
     *out = buf;
     return (size_t)end;
-}
-
-int breadfile_free(void* buf, size_t size) {
-    return munmap(buf, size);
 }
