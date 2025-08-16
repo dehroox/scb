@@ -1,18 +1,12 @@
 cc: clang
 
-flags:
-  - -Wall
+flags: -Wall
 
 files:
   - src/*.c
 
-out:
-  - bin/final.o
+out: bin/final.o
 
 profiles:
-  - dev:
-    - -O0
-    - -g
-  - release:
-    - O3
-    - -g0
+  - dev: -O0
+  - release: -O3
