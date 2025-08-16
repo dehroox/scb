@@ -1,0 +1,17 @@
+[global]
+cc = "clang"
+flags = "-Wall"
+files = ["src/*.c"]
+out = "bin/final.o"
+
+[profile.dev]
+flags = "-O0"
+
+[profile.release]
+flags = "-O3"
+
+[package]
+items = [
+    { name = "example_package", version = "1.2" },
+    { name = "another_package", version = "0.9" }
+]
