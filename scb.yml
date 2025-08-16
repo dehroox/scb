@@ -1,3 +1,18 @@
-testingtestingforbreadfile
+cc: clang
 
-teaisdi asdniq
+flags:
+  - -Wall
+
+files:
+  - src/*.c
+
+out:
+  - bin/final.o
+
+profiles:
+  - dev:
+    - -O0
+    - -g
+  - release:
+    - O3
+    - -g0
