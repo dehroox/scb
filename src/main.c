@@ -10,10 +10,15 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
 #include <unistd.h>
-#include "likely_unlikely.h"
+#include <yaml.h>
+#include "../include/breadfile.h"
+#include "../include/likely_unlikely.h"
 
 #define VERSION "0.1"
+#define DEFAULT_CONFIG_FILE "/scb.yml"
 
 static inline void usage() {
     (void)fprintf(stderr,
@@ -38,7 +43,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    char arg = (argc > 1) ? argv[1][1] : '?';
+    int arg = (argc > 1) ? argv[1][1] : '?';
 
     switch (arg) {
         case 'h':
@@ -64,6 +69,18 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
     }
 
-    puts(config_file ? config_file : "scb.yml");
+    void* buffer = NULL;
+    const char* cpath =
+        strncat(cwd, config_file ? config_file : DEFAULT_CONFIG_FILE,
+                sizeof(cwd) - strlen(cwd) - 1);
+
+    size_t filesize = breadfile(cpath, &buffer);
+
+    if (unlikely(filesize == 0) || unlikely(buffer == NULL)) {
+        (void)fprintf(stderr, "Failed to read config file, exiting..");
+        return EXIT_FAILURE;
+    }
+
+    breadfile_free(buffer, filesize);
     return EXIT_SUCCESS;
 }
