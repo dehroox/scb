@@ -15,7 +15,7 @@
 
 #define VERSION "0.1"
 
-static void usage() {
+static inline void usage() {
     (void)fprintf(stderr,
                   "Usage: SCB [options] <args>\n"
                   "Options:\n"
