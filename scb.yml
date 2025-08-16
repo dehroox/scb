@@ -1,16 +1,14 @@
-cc: clang
+global:
+  cc: clang
+  flags: -Wall
+  files:
+    - src/*.c
+  out: bin/final.o
 
-flags: -Wall
-
-files:
-  - src/*.c
-
-out: bin/final.o
+profiles:
+  dev: -O0
+  release: -O3
 
 packages:
   - name: example_package
     version: 1.2
-
-profiles:
-  - dev: -O0
-  - release: -O3
