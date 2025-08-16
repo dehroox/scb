@@ -24,7 +24,7 @@ static void usage() {
                   "  -c <path>            Explicitly set config file\n"
                   "  -a <dep(s)>          Add a dependency\n"
                   "  -r <dep(s)>          Remove a dependency\n"
-                  "  -i <path>            Initialize a project\n"
+                  "  -i <?path>           Initialize a project\n"
                   "  -r <?profile>        Run default/specified profile\n"
                   "  -b <?profile>        Build default/specified profile\n");
 }
