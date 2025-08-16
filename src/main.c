@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     void* buffer = NULL;
     size_t filesize = breadfile(path, &buffer);
 
-    if (unlikely(filesize == 0) || unlikely(buffer == NULL)) {
+    if (unlikely(filesize == 0 || buffer == NULL)) {
         (void)fprintf(stderr, "Failed to read config file: %s\n", path);
         return EXIT_FAILURE;
     }
