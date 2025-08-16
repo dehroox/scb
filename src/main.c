@@ -14,8 +14,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <yaml.h>
-#include "../include/breadfile.h"
-#include "../include/likely_unlikely.h"
+#include "breadfile.h"
+#include "likely_unlikely.h"
 
 #define VERSION "0.1"
 #define DEFAULT_CONFIG_FILE "scb.yml"

@@ -8,14 +8,14 @@
     yet matter so much.
 */
 
-#include "../include/breadfile.h"
+#include "breadfile.h"
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "../include/likely_unlikely.h"
+#include "likely_unlikely.h"
 
 size_t breadfile(const char* path, void** out) {
     *out = NULL;
