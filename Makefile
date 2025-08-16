@@ -20,7 +20,7 @@ OBJDIR := obj
 BINDIR := bin
 
 # Files
-SOURCES := $(wildcard $(SRCDIR)/*.c)
+SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(INCDIR)/*.c)
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DEPENDS := $(OBJECTS:.o=.d)
 
