@@ -39,45 +39,53 @@ int main(int argc, char* argv[]) {
     char* config_file = NULL;
 
     if (unlikely(!getcwd(cwd, sizeof cwd))) {
-        (void)fprintf(stderr, "Failed to get CWD, exiting.");
+        perror("getcwd");
         return EXIT_FAILURE;
     }
 
-    int arg = (argc > 1) ? argv[1][1] : '?';
+    if (argc < 2 || argv[1][0] != '-') {
+        usage();
+        return EXIT_FAILURE;
+    }
 
-    switch (arg) {
+    char opt = argv[1][1];
+
+    switch (opt) {
         case 'h':
             usage();
-            break;
+            return EXIT_SUCCESS;
 
         case 'v':
             puts(VERSION);
-            break;
+            return EXIT_SUCCESS;
 
         case 'c':
-            if (!argv[2]) {
-                (void)fprintf(stderr,
-                              "Missing positional argument for config file\n");
+            if (argc < 3) {
+                (void)fprintf(stderr, "Missing argument for -c\n");
                 return EXIT_FAILURE;
             }
-
             config_file = argv[2];
             break;
 
         default:
             (void)fprintf(stderr, "Unrecognized option: %s\n", argv[1]);
+            usage();
             return EXIT_FAILURE;
     }
 
-    void* buffer = NULL;
-    const char* cpath =
-        strncat(cwd, config_file ? config_file : DEFAULT_CONFIG_FILE,
-                sizeof(cwd) - strlen(cwd) - 1);
+    char path[2048];
+    if (snprintf(path, sizeof path, "%s/%s", cwd,
+                 config_file ? config_file : DEFAULT_CONFIG_FILE) >=
+        (int)sizeof path) {
+        (void)fprintf(stderr, "Config path too long\n");
+        return EXIT_FAILURE;
+    }
 
-    size_t filesize = breadfile(cpath, &buffer);
+    void* buffer = NULL;
+    size_t filesize = breadfile(path, &buffer);
 
     if (unlikely(filesize == 0) || unlikely(buffer == NULL)) {
-        (void)fprintf(stderr, "Failed to read config file, exiting..");
+        (void)fprintf(stderr, "Failed to read config file: %s\n", path);
         return EXIT_FAILURE;
     }
 
