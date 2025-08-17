@@ -1,4 +1,4 @@
-
+// NOLINTBEGIN
 /* Copyright (c) 2024-2025, CK Tan.
  * https://github.com/cktan/tomlc17/blob/main/LICENSE
  */
@@ -117,7 +117,7 @@ TOML_EXTERN void toml_free(toml_result_t result);
  * Find a key in a toml_table. Return the value of the key if found,
  * or a TOML_UNKNOWN otherwise.
  */
-TOML_EXTERN toml_datum_t toml_get(toml_datum_t table, const char* key);
+TOML_EXTERN toml_datum_t toml_get(toml_datum_t datum, const char* key);
 
 /**
  * Locate a value starting from a toml_table. Return the value of the key if
@@ -189,3 +189,4 @@ TOML_EXTERN toml_option_t toml_default_option(void);
 TOML_EXTERN void toml_set_option(toml_option_t opt);
 
 #endif  // TOMLC17_H
+// NOLINTEND

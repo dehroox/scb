@@ -1,3 +1,4 @@
+// NOLINTBEGIN
 /* Copyright (c) 2024-2025, CK Tan.
  * https://github.com/cktan/tomlc17/blob/main/LICENSE
  */
@@ -2812,3 +2813,4 @@ static int ucs_to_utf8(uint32_t code, char buf[4]) {
 
     return -1;
 }
+// NOLINTEND
