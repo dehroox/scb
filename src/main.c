@@ -29,36 +29,36 @@ static inline void usage(void) {
         stderr);
 }
 
-typedef int (*opt_func)(char* arg);
+typedef int (*opt_func)(const char* arg);
 
-static inline int handle_help(char* arg) {
+static inline int handle_help(const char* arg) {
     (void)arg;
     usage();
     exit(EXIT_SUCCESS);
 }
-static inline int handle_version(char* arg) {
+static inline int handle_version(const char* arg) {
     (void)arg;
     puts(VERSION);
     exit(EXIT_SUCCESS);
 }
 
-static inline int handle_add(char* arg) {
+static inline int handle_add(const char* arg) {
     printf("Add dependencies: %s\n", arg);
     return 0;
 }
-static inline int handle_remove(char* arg) {
+static inline int handle_remove(const char* arg) {
     printf("Remove dependencies: %s\n", arg);
     return 0;
 }
-static int handle_init(char* arg) {
+static inline int handle_init(const char* arg) {
     printf("Initialize project. Path: %s\n", arg ? arg : "(default)");
     return 0;
 }
-static inline int handle_run(char* arg) {
+static inline int handle_run(const char* arg) {
     printf("Run profile: %s\n", arg ? arg : "(global)");
     return 0;
 }
-static inline int handle_build(char* arg) {
+static inline int handle_build(const char* arg) {
     printf("Build profile: %s\n", arg ? arg : "(global)");
     return 0;
 }
