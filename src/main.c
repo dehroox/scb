@@ -36,6 +36,7 @@ static inline int handle_help(const char* arg) {
     usage();
     exit(EXIT_SUCCESS);
 }
+
 static inline int handle_version(const char* arg) {
     (void)arg;
     puts(VERSION);
@@ -46,18 +47,22 @@ static inline int handle_add(const char* arg) {
     printf("Add dependencies: %s\n", arg);
     return 0;
 }
+
 static inline int handle_remove(const char* arg) {
     printf("Remove dependencies: %s\n", arg);
     return 0;
 }
+
 static inline int handle_init(const char* arg) {
     printf("Initialize project. Path: %s\n", arg ? arg : "(default)");
     return 0;
 }
+
 static inline int handle_run(const char* arg) {
     printf("Run profile: %s\n", arg ? arg : "(global)");
     return 0;
 }
+
 static inline int handle_build(const char* arg) {
     printf("Build profile: %s\n", arg ? arg : "(global)");
     return 0;
