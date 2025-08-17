@@ -1,8 +1,9 @@
 #include "state.h"
 #include <stdlib.h>
+#include "likely_unlikely.h"
 
 void print_state(const State* state) {
-    if (!state) {
+    if (unlikely(!state)) {
         return;
     }
 
@@ -39,7 +40,7 @@ void print_state(const State* state) {
 }
 
 void free_state(State* state) {
-    if (!state) {
+    if (unlikely(!state)) {
         return;
     }
 
@@ -54,15 +55,15 @@ void free_state(State* state) {
 
     free(state->profiles);
 
-    if (state->global.files) {
+    if (likely(state->global.files)) {
         free((void*)state->global.files);
     }
 
-    if (state->packages) {
+    if (likely(state->packages)) {
         free(state->packages);
     }
 
-    if (state->toml_res.ok) {
+    if (likely(state->toml_res.ok)) {
         toml_free(state->toml_res);
     }
 

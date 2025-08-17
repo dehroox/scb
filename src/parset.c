@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "likely_unlikely.h"
 #include "state.h"
 #include "tomlc17.h"
 
@@ -10,7 +11,7 @@ static inline const char** build_file_array(toml_datum_t arr_table,
                                             size_t* out_count) {
     size_t count = (size_t)arr_table.u.arr.size;
     *out_count = count;
-    if (count == 0) {
+    if (unlikely(count == 0)) {
         return NULL;
     }
     const char** files = (const char**)malloc(sizeof(char*) * count);
@@ -24,7 +25,7 @@ State parset(const char* src, int len) {
     State parsed_state = {0};
 
     parsed_state.toml_res = toml_parse(src, len);
-    if (!parsed_state.toml_res.ok) {
+    if (unlikely(!parsed_state.toml_res.ok)) {
         (void)fprintf(stderr, "TOML parse failed: %s\n",
                       parsed_state.toml_res.errmsg);
         exit(1);
@@ -77,7 +78,7 @@ State parset(const char* src, int len) {
             val.type == TOML_STRING ? val.u.s : current_profile->out;
 
         val = toml_get(profile_table, "files");
-        if (val.type == TOML_ARRAY) {
+        if (likely(val.type == TOML_ARRAY)) {
             current_profile->file_num = (size_t)val.u.arr.size;
             current_profile->files =
                 build_file_array(val, &current_profile->file_num);
