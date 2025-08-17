@@ -1,5 +1,5 @@
-#ifndef READFILE_H
-#define READFILE_H
+#ifndef BREADFILE_H
+#define BREADFILE_H
 
 #include <stddef.h>
 

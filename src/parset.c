@@ -28,7 +28,8 @@ State parset(const char* src, int len) {
     if (unlikely(!parsed_state.toml_res.ok)) {
         (void)fprintf(stderr, "TOML parse failed: %s\n",
                       parsed_state.toml_res.errmsg);
-        exit(1);
+        parsed_state.toml_res.ok = false;
+        return parsed_state;
     }
 
     toml_datum_t top_table = parsed_state.toml_res.toptab;

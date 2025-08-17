@@ -134,6 +134,11 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     global_state = parset(config_file_buffer, (int)config_file_size);
+    if (unlikely(!global_state.toml_res.ok)) {
+        (void)fprintf(stderr, "Failed to parse config file\n");
+        (void)munmap(config_file_buffer, config_file_size);
+        return EXIT_FAILURE;
+    }
     (void)munmap(config_file_buffer, config_file_size);
 
     for (int i = 1; i < argc; i++) {
