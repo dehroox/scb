@@ -8,6 +8,7 @@
     yet matter so much.
 */
 
+#include <stdio.h>
 #include "breadfile.h"
 #include <fcntl.h>
 #include <stddef.h>
@@ -22,6 +23,7 @@ size_t breadfile(const char* path, void** out) {
 
     int file_descriptor = open(path, O_RDONLY);
     if (unlikely(file_descriptor < 0)) {
+        perror("open");
         return 0;
     }
 
