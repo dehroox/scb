@@ -1,8 +1,11 @@
+#include <errno.h>
+#include <linux/limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include "breadfile.h"
 #include "likely_unlikely.h"
@@ -54,7 +57,69 @@ static inline int handle_remove(const char* arg) {
 }
 
 static inline int handle_init(const char* arg) {
-    printf("Initialize project. Path: %s\n", arg ? arg : "(default)");
+    const char* path = arg ? arg : ".";
+    if (mkdir(path, 0755) == -1 && errno != EEXIST) {
+        perror("mkdir");
+        return -1;
+    }
+
+    char src_dir[PATH_MAX];
+    char build_dir[PATH_MAX];
+    (void)snprintf(src_dir, sizeof(src_dir), "%s/src", path);
+    (void)snprintf(build_dir, sizeof(build_dir), "%s/build", path);
+
+    if (mkdir(src_dir, 0755) == -1 && errno != EEXIST) {
+        perror("mkdir src");
+        return -1;
+    }
+    if (mkdir(build_dir, 0755) == -1 && errno != EEXIST) {
+        perror("mkdir build");
+        return -1;
+    }
+
+    char config_path[PATH_MAX];
+    (void)snprintf(config_path, sizeof(config_path), "%s/%s", path,
+                   DEFAULT_CONFIG_FILE);
+
+    FILE* config_file = fopen(config_path, "w");
+    if (!config_file) {
+        perror("fopen");
+        return -1;
+    }
+    (void)fprintf(config_file,
+                  "[global]\n"
+                  "cc = \"gcc\"\n"
+                  "flags = \"-Wall -Wextra -O2\"\n"
+                  "files = [\"src/*.c\"]\n"
+                  "out = \"build/final\"\n\n"
+
+                  "[profile.dev]\n"
+                  "flags = \"-Wall -Wextra -O0 -g3\"\n\n"
+
+                  "[profile.release]\n"
+                  "flags = \"-Wall -Wextra -O3\"\n\n"
+
+                  "[package]\n"
+                  "items = []\n");
+    (void)fclose(config_file);
+
+    char mainc_path[PATH_MAX];
+    (void)snprintf(mainc_path, sizeof(mainc_path), "%s/%s", src_dir, "main.c");
+
+    FILE* mainc = fopen(mainc_path, "w");
+    if (!mainc) {
+        perror("fopen");
+        return -1;
+    }
+    (void)fprintf(mainc,
+                  "#include <stdio.h>\n"
+                  "\n"
+                  "int main(void) {\n"
+                  "    puts(\"Hello World\");\n"
+                  "}\n");
+    (void)fclose(mainc);
+
+    printf("Initialized project at %s\n", path);
     return 0;
 }
 
