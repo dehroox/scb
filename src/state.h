@@ -26,7 +26,7 @@ typedef struct {
     toml_result_t toml_res;
 } State;
 
-void print_state(State* state);
+void print_state(const State* state);
 void free_state(State* state);
 
 #endif
