@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <linux/limits.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,9 +14,9 @@
 #define VERSION "0.1"
 #define DEFAULT_CONFIG_FILE "scb.toml"
 
-static State state;
+static State global_state;
 
-static inline void usage(void) {
+static inline void print_usage(void) {
     (void)fputs(
         "Usage: SCB [options]\n"
         "Options:\n"
@@ -32,176 +31,164 @@ static inline void usage(void) {
         stderr);
 }
 
-typedef int (*opt_func)(const char* arg);
-
-static inline int handle_help(const char* arg) {
-    (void)arg;
-    usage();
-    exit(EXIT_SUCCESS);
-}
-
-static inline int handle_version(const char* arg) {
-    (void)arg;
-    puts(VERSION);
-    exit(EXIT_SUCCESS);
-}
-
-static inline int handle_add(const char* arg) {
-    printf("Add dependencies: %s\n", arg);
+static inline int print_action(const char* action_label,
+                               const char* argument,
+                               const char* fallback) {
+    (void)printf("%s: %s\n", action_label, argument ? argument : fallback);
     return 0;
 }
 
-static inline int handle_remove(const char* arg) {
-    printf("Remove dependencies: %s\n", arg);
-    return 0;
-}
-
-static inline int handle_init(const char* arg) {
-    const char* path = arg ? arg : ".";
+static inline int ensure_directory_exists(const char* path) {
     if (mkdir(path, 0755) == -1 && errno != EEXIST) {
         perror("mkdir");
         return -1;
     }
-
-    char src_dir[PATH_MAX];
-    char build_dir[PATH_MAX];
-    (void)snprintf(src_dir, sizeof(src_dir), "%s/src", path);
-    (void)snprintf(build_dir, sizeof(build_dir), "%s/build", path);
-
-    if (mkdir(src_dir, 0755) == -1 && errno != EEXIST) {
-        perror("mkdir src");
-        return -1;
-    }
-    if (mkdir(build_dir, 0755) == -1 && errno != EEXIST) {
-        perror("mkdir build");
-        return -1;
-    }
-
-    char config_path[PATH_MAX];
-    (void)snprintf(config_path, sizeof(config_path), "%s/%s", path,
-                   DEFAULT_CONFIG_FILE);
-
-    FILE* config_file = fopen(config_path, "w");
-    if (!config_file) {
-        perror("fopen");
-        return -1;
-    }
-    (void)fprintf(config_file,
-                  "[global]\n"
-                  "cc = \"gcc\"\n"
-                  "flags = \"-Wall -Wextra -O2\"\n"
-                  "files = [\"src/*.c\"]\n"
-                  "out = \"build/final\"\n\n"
-
-                  "[profile.dev]\n"
-                  "flags = \"-Wall -Wextra -O0 -g3\"\n\n"
-
-                  "[profile.release]\n"
-                  "flags = \"-Wall -Wextra -O3\"\n\n"
-
-                  "[package]\n"
-                  "items = []\n");
-    (void)fclose(config_file);
-
-    char mainc_path[PATH_MAX];
-    (void)snprintf(mainc_path, sizeof(mainc_path), "%s/%s", src_dir, "main.c");
-
-    FILE* mainc = fopen(mainc_path, "w");
-    if (!mainc) {
-        perror("fopen");
-        return -1;
-    }
-    (void)fprintf(mainc,
-                  "#include <stdio.h>\n"
-                  "\n"
-                  "int main(void) {\n"
-                  "    puts(\"Hello World\");\n"
-                  "}\n");
-    (void)fclose(mainc);
-
-    printf("Initialized project at %s\n", path);
     return 0;
 }
 
-static inline int handle_run(const char* arg) {
-    printf("Run profile: %s\n", arg ? arg : "(global)");
-    return 0;
-}
+static inline int option_init_handler(const char* base_directory_path) {
+    const char* effective_base_path =
+        base_directory_path ? base_directory_path : ".";
+    char directory_buffer[PATH_MAX];
 
-static inline int handle_build(const char* arg) {
-    printf("Build profile: %s\n", arg ? arg : "(global)");
-    return 0;
-}
+    if (ensure_directory_exists(effective_base_path) == -1) {
+        return -1;
+    }
 
-typedef struct {
-    char opt;
-    int requires_arg;  // 1 = required, 0 = optional
-    opt_func func;
-} Option;
-
-static Option options[] = {
-    {'h', 0, handle_help},   {'v', 0, handle_version}, {'a', 1, handle_add},
-    {'r', 1, handle_remove}, {'i', 0, handle_init},    {'x', 0, handle_run},
-    {'b', 0, handle_build},
-};
-
-static inline char* next_arg(int argc, char* argv[], int* index) {
-    return (*index + 1 < argc && argv[*index + 1][0] != '-') ? argv[++(*index)]
-                                                             : NULL;
-}
-
-int main(int argc, char* argv[]) {
-    char* config_file = NULL;
-
-    for (int i = 1; i < argc; i++) {
-        if (argv[i][0] == '-' && argv[i][1] == 'c') {
-            if (i + 1 >= argc) {
-                (void)fprintf(stderr, "Missing argument for -c\n");
-                return EXIT_FAILURE;
-            }
-            config_file = argv[++i];
+    const char* subdirs[] = {"src", "build"};
+    for (size_t i = 0; i < sizeof(subdirs) / sizeof(subdirs[0]); i++) {
+        (void)snprintf(directory_buffer, sizeof(directory_buffer), "%s/%s",
+                       effective_base_path, subdirs[i]);
+        if (ensure_directory_exists(directory_buffer) == -1) {
+            return -1;
         }
     }
 
-    const char* path = config_file ? config_file : DEFAULT_CONFIG_FILE;
-    void* buffer = NULL;
-    size_t filesize = breadfile(path, &buffer);
-    if (unlikely(filesize == 0 || !buffer)) {
-        (void)fprintf(stderr, "Failed to read config file: %s\n", path);
+    (void)snprintf(directory_buffer, sizeof(directory_buffer), "%s/%s",
+                   effective_base_path, DEFAULT_CONFIG_FILE);
+    FILE* config_file = fopen(directory_buffer, "w");
+    if (unlikely(!config_file)) {
+        perror("fopen");
+        return -1;
+    }
+    (void)fputs(
+        "[global]\n"
+        "cc = \"gcc\"\n"
+        "flags = \"-Wall -Wextra -O2\"\n"
+        "files = [\"src/*.c\"]\n"
+        "out = \"build/final\"\n\n"
+        "[profile.dev]\n"
+        "flags = \"-Wall -Wextra -O0 -g3\"\n\n"
+        "[profile.release]\n"
+        "flags = \"-Wall -Wextra -O3\"\n\n"
+        "[package]\n"
+        "items = []\n",
+        config_file);
+    (void)fclose(config_file);
+
+    (void)snprintf(directory_buffer, sizeof(directory_buffer), "%s/src/main.c",
+                   effective_base_path);
+    FILE* main_file = fopen(directory_buffer, "w");
+    if (unlikely(!main_file)) {
+        perror("fopen");
+        return -1;
+    }
+    (void)fputs(
+        "#include <stdio.h>\n\nint main(void) { puts(\"Hello World\"); }\n",
+        main_file);
+    (void)fclose(main_file);
+
+    (void)printf("Initialized project at %s\n", effective_base_path);
+    return 0;
+}
+
+static inline char* fetch_next_argument(int argc,
+                                        char* argv[],
+                                        int* index_ptr) {
+    return (*index_ptr + 1 < argc && argv[*index_ptr + 1][0] != '-')
+               ? argv[++(*index_ptr)]
+               : NULL;
+}
+
+int main(int argc, char* argv[]) {
+    char* explicit_config_path = NULL;
+
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-' && argv[i][1] == 'c') {
+            if (unlikely(i + 1 >= argc)) {
+                (void)fprintf(stderr, "Missing argument for -c\n");
+                return EXIT_FAILURE;
+            }
+            explicit_config_path = argv[++i];
+        }
+    }
+
+    const char* effective_config_path =
+        explicit_config_path ? explicit_config_path : DEFAULT_CONFIG_FILE;
+    void* config_file_buffer = NULL;
+    size_t config_file_size =
+        breadfile(effective_config_path, &config_file_buffer);
+    if (unlikely(config_file_size == 0 || !config_file_buffer)) {
+        (void)fprintf(stderr, "Failed to read config file: %s\n",
+                      effective_config_path);
         return EXIT_FAILURE;
     }
-    state = parset(buffer, (int)filesize);
-    munmap(buffer, filesize);
+    global_state = parset(config_file_buffer, (int)config_file_size);
+    (void)munmap(config_file_buffer, config_file_size);
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
             continue;
         }
-        char opt = argv[i][1];
-        char* arg = next_arg(argc, argv, &i);
 
-        int handled = 0;
-        for (size_t j = 0; j < sizeof(options) / sizeof(options[0]); j++) {
-            handled |= (options[j].opt == opt);
-            if (options[j].opt == opt) {
-                if (options[j].requires_arg && !arg) {
-                    (void)fprintf(stderr, "Missing argument for -%c\n", opt);
-                    free_state(&state);
+        char option_character = argv[i][1];
+        char* option_argument = fetch_next_argument(argc, argv, &i);
+
+        switch (option_character) {
+            case 'h':
+                print_usage();
+                free_state(&global_state);
+                return EXIT_SUCCESS;
+            case 'v':
+                (void)puts(VERSION);
+                free_state(&global_state);
+                return EXIT_SUCCESS;
+            case 'a':
+                if (unlikely(!option_argument)) {
+                    (void)fprintf(stderr, "Missing argument for -a\n");
+                    free_state(&global_state);
                     return EXIT_FAILURE;
                 }
-                options[j].func(arg);
+                (void)print_action("Add dependencies", option_argument, NULL);
                 break;
-            }
-        }
-
-        if (!handled) {
-            (void)fprintf(stderr, "Unknown option: -%c\n", opt);
-            usage();
-            free_state(&state);
-            return EXIT_FAILURE;
+            case 'r':
+                if (unlikely(!option_argument)) {
+                    (void)fprintf(stderr, "Missing argument for -r\n");
+                    free_state(&global_state);
+                    return EXIT_FAILURE;
+                }
+                (void)print_action("Remove dependencies", option_argument,
+                                   NULL);
+                break;
+            case 'i':
+                (void)option_init_handler(option_argument);
+                break;
+            case 'x':
+                (void)print_action("Run profile", option_argument, "(global)");
+                break;
+            case 'b':
+                (void)print_action("Build profile", option_argument,
+                                   "(global)");
+                break;
+            default:
+                (void)fprintf(stderr, "Unknown option: -%c\n",
+                              option_character);
+                print_usage();
+                free_state(&global_state);
+                return EXIT_FAILURE;
         }
     }
 
-    free_state(&state);
+    free_state(&global_state);
     return EXIT_SUCCESS;
 }
