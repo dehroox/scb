@@ -16,6 +16,8 @@
 #include <yaml.h>
 #include "breadfile.h"
 #include "likely_unlikely.h"
+#include "parset.h"
+#include "state.h"
 
 #define VERSION "0.1"
 #define DEFAULT_CONFIG_FILE "scb.yml"
@@ -77,6 +79,11 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    State state = parset(buffer, (int)filesize);
+
+    print_state(&state);
+
+    free_state(&state);
     munmap(buffer, filesize);
     return EXIT_SUCCESS;
 }

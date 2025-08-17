@@ -2,6 +2,6 @@
 #define PARSET_H
 
 #include "state.h"
-State parset(void** input);
+State parset(const char* src, int len);
 
 #endif

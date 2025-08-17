@@ -20,14 +20,14 @@ OBJDIR := obj
 BINDIR := bin
 
 # Files
-SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(INCDIR)/*.c)
-OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+SOURCES := $(wildcard $(SRCDIR)/*.c $(INCDIR)/*.c)
+OBJECTS := $(SOURCES:%.c=$(OBJDIR)/%.o)
 DEPENDS := $(OBJECTS:.o=.d)
 
 # Default build type
 BUILD_TYPE ?= dev
 
-# Conditionally define directories and flags based on BUILD_TYPE
+# Conditionally define target and flags
 ifeq ($(BUILD_TYPE),debug)
 	TARGET := $(BINDIR)/main-debug.exe
 	CFLAGS := $(BASE_CFLAGS) -DDEBUG -O0 -g
@@ -44,27 +44,33 @@ LDFLAGS +=
 
 # Default target
 .PHONY: all clean build debug release install help distclean print-vars run
+.DEFAULT_GOAL := build
 
 all: build
 
-# Create directories if they don't exist
+# Create top-level directories
 $(OBJDIR) $(BINDIR):
+	@mkdir -p $@
+
+# Create obj subdirectories once
+OBJ_SUBDIRS := $(sort $(dir $(OBJECTS)))
+$(OBJ_SUBDIRS):
 	@mkdir -p $@
 
 # Include auto-generated dependencies
 -include $(DEPENDS)
 
 # Compile source files into object files
-$(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+$(OBJDIR)/%.o: %.c | $(OBJ_SUBDIRS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@
 
 # Link executable from object files
 $(TARGET): $(OBJECTS) | $(BINDIR)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
-# Generate compile_commands.json using bear (if available), otherwise fallback
+# Generate compile_commands.json
 compile_commands.json: $(SOURCES)
-	bear --output $@ -- $(MAKE) $(TARGET); 
+	bear --output $@ -- $(MAKE) $(TARGET) || true
 
 # Build with compile_commands.json
 build: compile_commands.json $(TARGET)
@@ -81,7 +87,7 @@ distclean: clean
 run: $(TARGET)
 	@./$(TARGET)
 
-# Install binary (example)
+# Install binary
 install: $(TARGET)
 	@echo "Installing $(TARGET) to /usr/local/bin/"
 	@cp $(TARGET) /usr/local/bin/
@@ -93,7 +99,7 @@ help:
 	@echo "  build     - Build with compile_commands.json"
 	@echo "  debug     - Build with debug flags"
 	@echo "  release   - Build with optimization flags"
-	@echo "  clean     - Remove build files"
+	@echo "  clean     - Remove build files"    
 	@echo "  distclean - Remove all generated files"
 	@echo "  run       - Run the built executable"
 	@echo "  install   - Install binary to system"
@@ -114,5 +120,3 @@ debug:
 
 release:
 	@$(MAKE) BUILD_TYPE=release
-
-.DEFAULT_GOAL := build
