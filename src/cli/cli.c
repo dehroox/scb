@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../config/config.h"
+#include "../core/build_project.h"
 #include "../core/initialize_project.h"
 #include "../main.h"
 #include "../util/likely_unlikely.h"
@@ -70,7 +71,8 @@ inline int get_opt(char option_character,
             (void)print_action("Run profile", option_argument, "(global)");
             break;
         case 'b':
-            (void)print_action("Build profile", option_argument, "(global)");
+            (void)build_project(option_argument ? option_argument : "global",
+                                global_config);
             break;
         default:
             (void)fprintf(stderr, "Unknown option: -%c\n", option_character);

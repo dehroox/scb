@@ -3,11 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../util/comparators.h"
 #include "../util/likely_unlikely.h"
+#include "config.h"
 #include "tomlc17.h"
 
 inline const char** build_file_array(toml_datum_t arr_table,
-                                            size_t* out_count) {
+                                     size_t* out_count) {
     size_t count = (size_t)arr_table.u.arr.size;
     *out_count = count;
     if (unlikely(count == 0)) {
@@ -84,6 +86,9 @@ inline Config parse_config(const char* src, int len) {
                 build_file_array(val, &current_profile->file_num);
         }
     }
+
+    qsort(parsed_config.profiles, parsed_config.profiles_num, sizeof(Profile),
+          compare_profile_names);
 
     toml_datum_t package_table = toml_get(top_table, "package");
     toml_datum_t package_items = toml_get(package_table, "items");
