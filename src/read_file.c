@@ -1,24 +1,14 @@
-/*
-    breadfile.c  ~  poem
-
-    A simple file it is, with even simpler contents,
-    Buffer-Read-File, a clever name for sure, bread.
-    Your utter importance, for everything from IO,
-    to anything except parsing, You cover so little,
-    yet matter so much.
-*/
-
-#include <stdio.h>
-#include "breadfile.h"
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include "likely_unlikely.h"
+#include "read_file.h"
 
-size_t breadfile(const char* path, void** out) {
+size_t read_file(const char* path, void** out) {
     *out = NULL;
 
     int file_descriptor = open(path, O_RDONLY);

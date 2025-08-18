@@ -6,15 +6,15 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "breadfile.h"
+#include "config.h"
 #include "likely_unlikely.h"
-#include "parset.h"
-#include "state.h"
+#include "parse_config.h"
+#include "read_file.h"
 
 #define VERSION "0.1"
 #define DEFAULT_CONFIG_FILE "scb.toml"
 
-static State global_state;
+static Config global_state;
 
 static inline void print_usage(void) {
     (void)fputs(
@@ -127,13 +127,13 @@ int main(int argc, char* argv[]) {
         explicit_config_path ? explicit_config_path : DEFAULT_CONFIG_FILE;
     void* config_file_buffer = NULL;
     size_t config_file_size =
-        breadfile(effective_config_path, &config_file_buffer);
+        read_file(effective_config_path, &config_file_buffer);
     if (unlikely(config_file_size == 0 || !config_file_buffer)) {
         (void)fprintf(stderr, "Failed to read config file: %s\n",
                       effective_config_path);
         return EXIT_FAILURE;
     }
-    global_state = parset(config_file_buffer, (int)config_file_size);
+    global_state = parse_config(config_file_buffer, (int)config_file_size);
     if (unlikely(!global_state.toml_res.ok)) {
         (void)fprintf(stderr, "Failed to parse config file\n");
         (void)munmap(config_file_buffer, config_file_size);
@@ -152,16 +152,16 @@ int main(int argc, char* argv[]) {
         switch (option_character) {
             case 'h':
                 print_usage();
-                free_state(&global_state);
+                free_config(&global_state);
                 return EXIT_SUCCESS;
             case 'v':
                 (void)puts(VERSION);
-                free_state(&global_state);
+                free_config(&global_state);
                 return EXIT_SUCCESS;
             case 'a':
                 if (unlikely(!option_argument)) {
                     (void)fprintf(stderr, "Missing argument for -a\n");
-                    free_state(&global_state);
+                    free_config(&global_state);
                     return EXIT_FAILURE;
                 }
                 (void)print_action("Add dependencies", option_argument, NULL);
@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
             case 'r':
                 if (unlikely(!option_argument)) {
                     (void)fprintf(stderr, "Missing argument for -r\n");
-                    free_state(&global_state);
+                    free_config(&global_state);
                     return EXIT_FAILURE;
                 }
                 (void)print_action("Remove dependencies", option_argument,
@@ -189,11 +189,11 @@ int main(int argc, char* argv[]) {
                 (void)fprintf(stderr, "Unknown option: -%c\n",
                               option_character);
                 print_usage();
-                free_state(&global_state);
+                free_config(&global_state);
                 return EXIT_FAILURE;
         }
     }
 
-    free_state(&global_state);
+    free_config(&global_state);
     return EXIT_SUCCESS;
 }

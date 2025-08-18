@@ -24,9 +24,9 @@ typedef struct {
     size_t package_num;
     Package* packages;
     toml_result_t toml_res;
-} State;
+} Config;
 
-void print_state(const State* state);
-void free_state(State* state);
+void print_config(const Config* state);
+void free_config(Config* state);
 
 #endif

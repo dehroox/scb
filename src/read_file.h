@@ -1,5 +1,5 @@
-#ifndef BREADFILE_H
-#define BREADFILE_H
+#ifndef READ_FILE_H
+#define READ_FILE_H
 
 #include <stddef.h>
 
@@ -9,6 +9,6 @@
 
     DO NOT free() THE BUFFER! USE munmap() instead.
 */
-size_t breadfile(const char* path, void** out);
+size_t read_file(const char* path, void** out);
 
 #endif

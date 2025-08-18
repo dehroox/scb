@@ -1,10 +1,9 @@
-#include "parset.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "likely_unlikely.h"
-#include "state.h"
+#include "parse_config.h"
 #include "tomlc17.h"
 
 static inline const char** build_file_array(toml_datum_t arr_table,
@@ -21,33 +20,33 @@ static inline const char** build_file_array(toml_datum_t arr_table,
     return files;
 }
 
-State parset(const char* src, int len) {
-    State parsed_state = {0};
+Config parse_config(const char* src, int len) {
+    Config parsed_config = {0};
 
-    parsed_state.toml_res = toml_parse(src, len);
-    if (unlikely(!parsed_state.toml_res.ok)) {
+    parsed_config.toml_res = toml_parse(src, len);
+    if (unlikely(!parsed_config.toml_res.ok)) {
         (void)fprintf(stderr, "TOML parse failed: %s\n",
-                      parsed_state.toml_res.errmsg);
-        parsed_state.toml_res.ok = false;
-        return parsed_state;
+                      parsed_config.toml_res.errmsg);
+        parsed_config.toml_res.ok = false;
+        return parsed_config;
     }
 
-    toml_datum_t top_table = parsed_state.toml_res.toptab;
+    toml_datum_t top_table = parsed_config.toml_res.toptab;
 
     toml_datum_t global_table = toml_get(top_table, "global");
-    parsed_state.global.name = "global";
-    parsed_state.global.cc = toml_get(global_table, "cc").u.s;
-    parsed_state.global.flags = toml_get(global_table, "flags").u.s;
-    parsed_state.global.out = toml_get(global_table, "out").u.s;
+    parsed_config.global.name = "global";
+    parsed_config.global.cc = toml_get(global_table, "cc").u.s;
+    parsed_config.global.flags = toml_get(global_table, "flags").u.s;
+    parsed_config.global.out = toml_get(global_table, "out").u.s;
 
     toml_datum_t global_files_array = toml_get(global_table, "files");
-    parsed_state.global.files =
-        build_file_array(global_files_array, &parsed_state.global.file_num);
+    parsed_config.global.files =
+        build_file_array(global_files_array, &parsed_config.global.file_num);
 
     toml_datum_t profile_parent_table = toml_get(top_table, "profile");
-    parsed_state.profiles =
+    parsed_config.profiles =
         malloc(sizeof(Profile) * (size_t)profile_parent_table.u.tab.size);
-    parsed_state.profiles_num = 0;
+    parsed_config.profiles_num = 0;
 
     for (size_t key_index = 0;
          key_index < (size_t)profile_parent_table.u.tab.size; key_index++) {
@@ -56,13 +55,13 @@ State parset(const char* src, int len) {
             profile_parent_table.u.tab.value[key_index];
 
         Profile* current_profile =
-            &parsed_state.profiles[parsed_state.profiles_num++];
+            &parsed_config.profiles[parsed_config.profiles_num++];
         current_profile->name = profile_name;
-        current_profile->cc = parsed_state.global.cc;
-        current_profile->flags = parsed_state.global.flags;
-        current_profile->out = parsed_state.global.out;
-        current_profile->files = parsed_state.global.files;
-        current_profile->file_num = parsed_state.global.file_num;
+        current_profile->cc = parsed_config.global.cc;
+        current_profile->flags = parsed_config.global.flags;
+        current_profile->out = parsed_config.global.out;
+        current_profile->files = parsed_config.global.files;
+        current_profile->file_num = parsed_config.global.file_num;
 
         toml_datum_t val;
 
@@ -88,19 +87,20 @@ State parset(const char* src, int len) {
 
     toml_datum_t package_table = toml_get(top_table, "package");
     toml_datum_t package_items = toml_get(package_table, "items");
-    parsed_state.package_num = (size_t)package_items.u.arr.size;
-    parsed_state.packages =
-        parsed_state.package_num
-            ? malloc(sizeof(Package) * parsed_state.package_num)
+    parsed_config.package_num = (size_t)package_items.u.arr.size;
+    parsed_config.packages =
+        parsed_config.package_num
+            ? malloc(sizeof(Package) * parsed_config.package_num)
             : NULL;
 
-    for (size_t pkg_index = 0; pkg_index < parsed_state.package_num;
+    for (size_t pkg_index = 0; pkg_index < parsed_config.package_num;
          pkg_index++) {
         toml_datum_t pkg_table = package_items.u.arr.elem[pkg_index];
-        parsed_state.packages[pkg_index].name = toml_get(pkg_table, "name").u.s;
-        parsed_state.packages[pkg_index].version =
+        parsed_config.packages[pkg_index].name =
+            toml_get(pkg_table, "name").u.s;
+        parsed_config.packages[pkg_index].version =
             toml_get(pkg_table, "version").u.s;
     }
 
-    return parsed_state;
+    return parsed_config;
 }

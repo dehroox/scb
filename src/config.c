@@ -1,8 +1,8 @@
-#include "state.h"
+#include "config.h"
 #include <stdlib.h>
 #include "likely_unlikely.h"
 
-void print_state(const State* state) {
+void print_config(const Config* state) {
     if (unlikely(!state)) {
         return;
     }
@@ -39,7 +39,7 @@ void print_state(const State* state) {
     }
 }
 
-void free_state(State* state) {
+void free_config(Config* state) {
     if (unlikely(!state)) {
         return;
     }
@@ -67,5 +67,5 @@ void free_state(State* state) {
         toml_free(state->toml_res);
     }
 
-    *state = (State){0};
+    *state = (Config){0};
 }
