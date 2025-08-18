@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../util/likely_unlikely.h"
 
-void print_config(const Config* state) {
+inline void print_config(const Config* state) {
     if (unlikely(!state)) {
         return;
     }
@@ -39,7 +39,7 @@ void print_config(const Config* state) {
     }
 }
 
-void free_config(Config* state) {
+inline void free_config(Config* state) {
     if (unlikely(!state)) {
         return;
     }

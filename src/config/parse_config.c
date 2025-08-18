@@ -20,7 +20,7 @@ static inline const char** build_file_array(toml_datum_t arr_table,
     return files;
 }
 
-Config parse_config(const char* src, int len) {
+inline Config parse_config(const char* src, int len) {
     Config parsed_config = {0};
 
     parsed_config.toml_res = toml_parse(src, len);
