@@ -6,7 +6,7 @@
 #include "../util/likely_unlikely.h"
 #include "tomlc17.h"
 
-static inline const char** build_file_array(toml_datum_t arr_table,
+inline const char** build_file_array(toml_datum_t arr_table,
                                             size_t* out_count) {
     size_t count = (size_t)arr_table.u.arr.size;
     *out_count = count;
