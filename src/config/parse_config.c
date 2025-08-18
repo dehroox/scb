@@ -1,9 +1,9 @@
+#include "parse_config.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "likely_unlikely.h"
-#include "parse_config.h"
+#include "../util/likely_unlikely.h"
 #include "tomlc17.h"
 
 static inline const char** build_file_array(toml_datum_t arr_table,

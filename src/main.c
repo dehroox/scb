@@ -6,10 +6,10 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "config.h"
-#include "likely_unlikely.h"
-#include "parse_config.h"
-#include "read_file.h"
+#include "config/config.h"
+#include "config/parse_config.h"
+#include "util/likely_unlikely.h"
+#include "util/read_file.h"
 
 #define VERSION "0.1"
 #define DEFAULT_CONFIG_FILE "scb.toml"

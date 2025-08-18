@@ -1,6 +1,6 @@
 #include "config.h"
 #include <stdlib.h>
-#include "likely_unlikely.h"
+#include "../util/likely_unlikely.h"
 
 void print_config(const Config* state) {
     if (unlikely(!state)) {
