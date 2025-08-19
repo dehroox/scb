@@ -27,5 +27,7 @@ int build_project(const char* argument, Config* config) {
         return -1;
     }
 
+    // TODO: Implement compilation :o
+
     return 0;
 }
