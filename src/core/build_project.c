@@ -1,7 +1,11 @@
 #include "build_project.h"
+#include <linux/limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "../config/config.h"
+#include "../main.h"
 #include "../util/comparators.h"
 #include "../util/sorts.h"
 
@@ -27,7 +31,22 @@ int build_project(const char* argument, Config* config) {
         return -1;
     }
 
-    // TODO: Implement compilation :o
+    const char** argv = (const char**)malloc(
+        sizeof(char*) * (profile.file_num + profile.flag_num + 4));
+    argv[0] = profile.cc;
+    argv[1] = "-o";
+    argv[2] = profile.out;
+    for (size_t j = 0; j < profile.flag_num; j++) {
+        argv[3 + profile.file_num + j] = profile.flags[j];
+    }
 
-    return 0;
+    for (size_t i = 0; i < profile.file_num; i++) {
+        argv[3 + i] = profile.files[i];
+    }
+
+    argv[3 + profile.file_num + profile.flag_num] = NULL;
+
+    PRINT_ARRAY(argv, profile.file_num + profile.flag_num + 3, "%s");
+    
+    return execvp(profile.cc, (char* const*)argv);
 }

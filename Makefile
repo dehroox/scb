@@ -20,7 +20,7 @@ OBJDIR := obj
 BINDIR := bin
 
 # Files
-SOURCES := $(wildcard $(SRCDIR)/**/*.c $(INCDIR)/*.c) $(SRCDIR)/main.c
+SOURCES := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c) $(wildcard $(INCDIR)/*.c)
 OBJECTS := $(SOURCES:%.c=$(OBJDIR)/%.o)
 DEPENDS := $(OBJECTS:.o=.d)
 
@@ -36,7 +36,7 @@ else ifeq ($(BUILD_TYPE),release)
 	CFLAGS := $(BASE_CFLAGS) -DNDEBUG -O3 -flto -pipe
 else
 	TARGET := $(BINDIR)/main-dev.exe
-	CFLAGS := $(BASE_CFLAGS) -O2
+	CFLAGS := $(BASE_CFLAGS) -O2 -Wno-error
 endif
 
 CPPFLAGS += -I$(INCDIR)

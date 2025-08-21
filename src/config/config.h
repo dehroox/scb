@@ -6,7 +6,8 @@
 typedef struct {
     const char* name;
     const char* cc;
-    const char* flags;
+    size_t flag_num;
+    const char** flags;
     size_t file_num;
     const char** files;
     const char* out;

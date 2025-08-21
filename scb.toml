@@ -1,6 +1,6 @@
 [global]
 cc = "clang"
-flags = "-Wall"
+flags = ["-Wall"]
 files = ["src/*.c"]
 out = "bin/final.o"
 

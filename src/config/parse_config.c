@@ -38,7 +38,11 @@ inline Config parse_config(const char* src, int len) {
     toml_datum_t global_table = toml_get(top_table, "global");
     parsed_config.global.name = "global";
     parsed_config.global.cc = toml_get(global_table, "cc").u.s;
-    parsed_config.global.flags = toml_get(global_table, "flags").u.s;
+
+    toml_datum_t global_flag_array = toml_get(global_table, "flags");
+    parsed_config.global.flags =
+        build_file_array(global_flag_array, &parsed_config.global.flag_num);
+
     parsed_config.global.out = toml_get(global_table, "out").u.s;
 
     toml_datum_t global_files_array = toml_get(global_table, "files");
@@ -72,8 +76,11 @@ inline Config parse_config(const char* src, int len) {
             val.type == TOML_STRING ? val.u.s : current_profile->cc;
 
         val = toml_get(profile_table, "flags");
-        current_profile->flags =
-            val.type == TOML_STRING ? val.u.s : current_profile->flags;
+        if (likely(val.type == TOML_ARRAY)) {
+            current_profile->flag_num = (size_t)val.u.arr.size;
+            current_profile->flags =
+                build_file_array(val, &current_profile->flag_num);
+        }
 
         val = toml_get(profile_table, "out");
         current_profile->out =
